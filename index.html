@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uno Minda @ ACMA Automechanika 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <style>
+        :root { --uno-blue: #003366; --uno-light: #f4f7f9; --accent: #e31e24; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--uno-light); margin: 0; padding: 10px; color: #333; }
+        .container { max-width: 550px; margin: auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .header { background: var(--uno-blue); color: white; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .tabs { display: flex; background: #eee; border-bottom: 1px solid #ddd; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #666; transition: 0.3s; }
+        .tab-btn.active { background: white; color: var(--uno-blue); border-top: 3px solid var(--uno-blue); }
+
+        .form-content { padding: 25px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; color: #555; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; transition: border 0.3s; }
+        input:focus { border-color: var(--uno-blue); outline: none; }
+        
+        #camera-area { background: #000; position: relative; width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 15px; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .scan-overlay { position: absolute; border: 2px dashed rgba(255,255,255,0.5); width: 80%; height: 60%; pointer-events: none; border-radius: 10px; }
+        
+        .btn-main { width: 100%; padding: 15px; background: var(--uno-blue); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; box-shadow: 0 4px 10px rgba(0,51,102,0.2); }
+        .btn-main:disabled { background: #ccc; }
+        .btn-scan { background: #444; margin-top: 0; }
+        .hidden { display: none; }
+        .loader-text { font-size: 12px; text-align: center; color: var(--uno-blue); margin-top: 5px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>ACMA Automechanika 2026</h2>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="tabManual" onclick="switchTab('manual')">Fill Information</button>
+        <button class="tab-btn" id="tabScan" onclick="switchTab('scan')">Scan Card</button>
+    </div>
+
+    <div class="form-content">
+        <div id="scan-section" class="hidden">
+            <div id="camera-area">
+                <video id="video" autoplay playsinline></video>
+                <div class="scan-overlay"></div>
+            </div>
+            <p id="ocr-status" class="loader-text">Point camera at visiting card</p>
+            <button type="button" class="btn-main btn-scan" onclick="captureAndProcess()">Capture & Extract</button>
+            <hr style="margin: 25px 0;">
+        </div>
+
+        <form id="masterForm">
+            <div class="form-group">
+                <label>Visitor Type*</label>
+                <select name="VisitorType" id="vType" required onchange="updateSubOptions()">
+                    <option value="">-- Select --</option>
+                    <option value="Customer">Customer</option>
+                    <option value="Supplier/ Service Provider">Supplier/ Service Provider</option>
+                    <option value="Media">Media</option>
+                </select>
+            </div>
+
+            <div id="subTypeDiv" class="form-group hidden">
+                <label id="subLabel">Category*</label>
+                <select name="SubType" id="vSubType"></select>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex:1;"><label>First Name*</label><input type="text" name="FirstName" id="fName" required></div>
+                <div class="form-group" style="flex:1;"><label>Last Name*</label><input type="text" name="LastName" id="lName" required></div>
+            </div>
+
+            <div class="form-group"><label>Contact Number*</label><input type="tel" name="Contact" id="contact" required></div>
+            <div class="form-group"><label>Email ID*</label><input type="email" name="Email" id="email" required></div>
+
+            <div class="form-group">
+                <label>Country*</label>
+                <select name="Country" id="country" required>
+                    <option value="India" selected>India</option>
+                    <option value="USA">USA</option>
+                    <option value="Germany">Germany</option>
+                    <option value="Japan">Japan</option>
+                    <option value="UK">UK</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>State*</label>
+                <select name="State" id="state" required>
+                    <option value="">-- Select State --</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Haryana">Haryana</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="Other">Other (Intl)</option>
+                </select>
+            </div>
+
+            <div class="form-group"><label>City*</label><input type="text" name="City" id="city" required></div>
+            <div class="form-group"><label>Business Details</label><textarea name="BusinessDetails" id="biz" rows="2" placeholder="Company name, designation..."></textarea></div>
+
+            <div class="form-group">
+                <label>Connected with Uno Minda?</label>
+                <select name="UnoMinda" id="uno">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+
+            <input type="hidden" name="RawScannedText" id="rawText">
+            <button type="submit" class="btn-main" id="submitBtn">Submit to Dashboard</button>
+        </form>
+    </div>
+</div>
+
+<canvas id="canvas" class="hidden"></canvas>
+
+<script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1L3p6vBibxAWT_FypAIREMZqAjnvhXCu3D27cbWGgbgqsAjIxVMZ5dJY3RDl2zzYVkw/exec'; 
+    const video = document.getElementById('video');
+
+    function switchTab(mode) {
+        document.getElementById('tabManual').classList.toggle('active', mode === 'manual');
+        document.getElementById('tabScan').classList.toggle('active', mode === 'scan');
+        document.getElementById('scan-section').classList.toggle('hidden', mode === 'manual');
+        
+        if (mode === 'scan') {
+            startCamera();
+        } else {
+            stopCamera();
+        }
+    }
+
+    async function startCamera() {
+        if (!window.isSecureContext) {
+            alert("Security Error: Camera requires an HTTPS connection or localhost.");
+            return;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment", width: 1280, height: 720 } 
+            });
+            video.srcObject = stream;
+            document.getElementById('ocr-status').innerText = "Camera Ready";
+        } catch (err) {
+            alert("Camera Denied: Please check browser permissions.");
+        }
+    }
+
+    function stopCamera() {
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+    }
+
+    function updateSubOptions() {
+        const type = document.getElementById('vType').value;
+        const div = document.getElementById('subTypeDiv');
+        const select = document.getElementById('vSubType');
+        select.innerHTML = "";
+        
+        let opts = [];
+        if(type === "Customer") opts = ["OEM", "EV Manufacturer", "Distributor", "Retailer", "Workshop", "Mechanic"];
+        else if(type === "Supplier/ Service Provider") opts = ["Product/ Parts Supplier", "Technical Solutions Provider", "Services Provider"];
+        else if(type === "Media") opts = ["English", "Hindi", "Regional Languages"];
+
+        if(opts.length > 0) {
+            div.classList.remove('hidden');
+            opts.forEach(o => select.innerHTML += `<option value="${o}">${o}</option>`);
+        } else {
+            div.classList.add('hidden');
+        }
+    }
+
+    async function captureAndProcess() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+
+        document.getElementById('ocr-status').innerText = "Processing Text (AI)...";
+        
+        try {
+            const { data: { text } } = await Tesseract.recognize(canvas.toDataURL('image/jpeg'), 'eng');
+            document.getElementById('rawText').value = text;
+            
+            // Smart Parsing
+            const email = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+            const phone = text.match(/[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,8}/);
+            
+            if(email) document.getElementById('email').value = email[0];
+            if(phone) document.getElementById('contact').value = phone[0];
+            
+            document.getElementById('ocr-status').innerText = "Extracted! Review form below.";
+            window.scrollTo({ top: 400, behavior: 'smooth' });
+        } catch (e) {
+            alert("Scan failed. Please type manually.");
+        }
+    }
+
+    document.getElementById('masterForm').onsubmit = function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "Syncing Data...";
+
+        fetch(SCRIPT_URL, { method: 'POST', body: new FormData(this) })
+        .then(() => {
+            alert("Success! Entry Recorded.");
+            location.reload();
+        }).catch(() => {
+            alert("Error syncing. Data lost.");
+            btn.disabled = false;
+        });
+    };
+</script>
+</body>
+</html>
