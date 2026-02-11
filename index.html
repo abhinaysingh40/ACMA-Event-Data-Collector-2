@@ -3,18 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Data Collector</title>
+    <title>Uno Minda @ ACMA 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <style>
         :root { --uno-blue: #003366; --accent: #e31e24; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 10px; }
         .container { max-width: 550px; margin: auto; background: white; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden; }
-        
-        /* Updated Header with Logo and New Title */
-        .header { background: white; padding: 20px; text-align: center; border-bottom: 3px solid var(--uno-blue); }
-        .logo { max-height: 80px; margin-bottom: 10px; }
-        .header h2 { margin: 0; color: var(--uno-blue); text-transform: uppercase; font-size: 22px; }
-
+        .header { background: var(--uno-blue); color: white; padding: 20px; text-align: center; }
         .tabs { display: flex; background: #eee; }
         .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #666; }
         .tab-btn.active { background: white; color: var(--uno-blue); border-top: 4px solid var(--uno-blue); }
@@ -34,10 +29,7 @@
 <body>
 
 <div class="container">
-    <div class="header">
-        <img src="logo.png" alt="Uno Minda Logo" class="logo">
-        <h2>Event Data Collector</h2>
-    </div>
+    <div class="header"><h2>ACMA Automechanika 2026</h2></div>
     
     <div class="tabs">
         <button class="tab-btn active" id="tab1" onclick="switchTab('manual')">Information</button>
@@ -55,13 +47,6 @@
         <form id="masterForm">
             <input type="hidden" name="auth_token" value="UnoMinda_ACMA_2026_Secure_Handshake">
             <div class="hp-style"><input type="text" name="hp_field" tabindex="-1" autocomplete="off"></div>
-
-            <div class="form-group">
-                <label>Your Name (Employee Name)*</label>
-                <input type="text" name="Filled By (Employee Name)" id="employeeName" placeholder="Enter your full name" required>
-            </div>
-            
-            <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
 
             <div class="form-group">
                 <label>Visitor Type*</label>
